@@ -1,0 +1,254 @@
+[
+    {
+        "id": "6963f2d1.941c4c",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "e13b6bd5.ffe678",
+        "type": "inject",
+        "z": "6963f2d1.941c4c",
+        "name": "Cria Tabela",
+        "topic": "CREATE TABLE GELADEIRA( ALIMENTOTAG  TEXT PRIMARY KEY,    QUANTIDADE INT NOT NULL CHECK (QUANTIDADE >= 0) );",
+        "payload": "",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 530,
+        "y": 60,
+        "wires": [
+            [
+                "46f48174.7d864"
+            ]
+        ]
+    },
+    {
+        "id": "1baba0cb.1eeabf",
+        "type": "function",
+        "z": "6963f2d1.941c4c",
+        "name": "insere",
+        "func": "var newMsg = {\n \"topic\": \"INSERT INTO GELADEIRA (ALIMENTOTAG, QUANTIDADE)\"\n +\"VALUES ('\"+ msg.payload[0] +\"', 0);\"\n}\nreturn newMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 550,
+        "y": 120,
+        "wires": [
+            [
+                "46f48174.7d864"
+            ]
+        ]
+    },
+    {
+        "id": "543f8123.dec7b",
+        "type": "ui_template",
+        "z": "6963f2d1.941c4c",
+        "group": "f92b7ae9.31f748",
+        "name": "",
+        "order": 3,
+        "width": "5",
+        "height": "5",
+        "format": "<table style=\"width:100%\">\n  <tr>\n    <th>Alimento</th> \n    <th>Quantidade</th> \n  </tr>\n  <tr ng-repeat=\"x in msg.payload | limitTo:20\">\n    <td>{{msg.payload[$index].ALIMENTOTAG}}</td>\n    <td>{{msg.payload[$index].QUANTIDADE}}</td> \n  </tr>\n</table>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "local",
+        "x": 1000,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "46f48174.7d864",
+        "type": "sqlite",
+        "z": "6963f2d1.941c4c",
+        "mydb": "8e2253ba.5809a",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Geladeira",
+        "x": 840,
+        "y": 120,
+        "wires": [
+            [
+                "543f8123.dec7b"
+            ]
+        ]
+    },
+    {
+        "id": "219fd13.fa2352e",
+        "type": "inject",
+        "z": "6963f2d1.941c4c",
+        "name": "Deleta BD",
+        "topic": "DROP TABLE GELADEIRA",
+        "payload": "",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 540,
+        "y": 300,
+        "wires": [
+            [
+                "46f48174.7d864"
+            ]
+        ]
+    },
+    {
+        "id": "227f23d6.b97cdc",
+        "type": "ui_text_input",
+        "z": "6963f2d1.941c4c",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "group": "f92b7ae9.31f748",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 120,
+        "y": 180,
+        "wires": [
+            [
+                "668bbb9b.253084",
+                "4dfa45e0.47c80c"
+            ]
+        ]
+    },
+    {
+        "id": "4dfa45e0.47c80c",
+        "type": "function",
+        "z": "6963f2d1.941c4c",
+        "name": "view",
+        "func": "var newMsg = {\n \"topic\": \"SELECT * FROM  GELADEIRA ORDER BY ALIMENTOTAG ASC;\"\n}\nreturn newMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 550,
+        "y": 240,
+        "wires": [
+            [
+                "46f48174.7d864"
+            ]
+        ]
+    },
+    {
+        "id": "668bbb9b.253084",
+        "type": "function",
+        "z": "6963f2d1.941c4c",
+        "name": "Modificar quantidade",
+        "func": "var mensagem = msg.payload.split(\" \");\nvar newMsg = msg;\nvar sentido;\nif(mensagem[1] == \"++\"){\n    sentido = 1;\n}\nelse if(mensagem[1] == \"--\"){\n    sentido = -1;\n}\nelse{\n    sentido = 0;\n}\nnewMsg = {\"payload\": [mensagem[0], sentido]};\nreturn newMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 340,
+        "y": 180,
+        "wires": [
+            [
+                "1baba0cb.1eeabf",
+                "4220f126.7fefc"
+            ]
+        ]
+    },
+    {
+        "id": "4220f126.7fefc",
+        "type": "function",
+        "z": "6963f2d1.941c4c",
+        "name": "Modificar",
+        "func": "if(msg.payload[1] == 1){\nvar newMsg = {\n \"topic\": \"UPDATE GELADEIRA SET QUANTIDADE = QUANTIDADE + 1 \"+\n \"WHERE ALIMENTOTAG = '\"+ msg.payload[0] +\"';\"\n}    \n}else{\n   var newMsg = {\n \"topic\": \"UPDATE GELADEIRA SET QUANTIDADE = QUANTIDADE - 1 \"+\n \"WHERE ALIMENTOTAG = '\"+ msg.payload[0] +\"';\"\n}    \n}\n\nreturn newMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 540,
+        "y": 180,
+        "wires": [
+            [
+                "46f48174.7d864"
+            ]
+        ]
+    },
+    {
+        "id": "cde48b5.7250a78",
+        "type": "mqtt in",
+        "z": "6963f2d1.941c4c",
+        "name": "Alteração na geladeira",
+        "topic": "FrEasy/NomeUsuario/Geladeira",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "3f244c7b.0ed6b4",
+        "x": 180,
+        "y": 420,
+        "wires": [
+            [
+                "4fdfcc61.1eb1e4",
+                "668bbb9b.253084",
+                "4dfa45e0.47c80c"
+            ]
+        ]
+    },
+    {
+        "id": "4fdfcc61.1eb1e4",
+        "type": "debug",
+        "z": "6963f2d1.941c4c",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 490,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "f92b7ae9.31f748",
+        "type": "ui_group",
+        "z": "",
+        "name": "Alimentos",
+        "tab": "23547af7.979326",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "8e2253ba.5809a",
+        "type": "sqlitedb",
+        "z": "",
+        "db": "FrEasy",
+        "mode": "RWC"
+    },
+    {
+        "id": "3f244c7b.0ed6b4",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "HiveMQ",
+        "broker": "broker.hivemq.com",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "23547af7.979326",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Home",
+        "icon": "Alimento",
+        "disabled": false,
+        "hidden": false
+    }
+]
