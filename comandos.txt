@@ -1,0 +1,87 @@
+CREATE TABLE IF NOT EXISTS `freasy`.`Usuario` (
+  `idUsuario` INT NOT NULL AUTO_INCREMENT,
+  `Nome` VARCHAR(90) NULL,
+  `Senha` VARCHAR(45) NULL,
+  PRIMARY KEY (`idUsuario`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `freasy`.`Geladeira` (
+  `idGeladeira` INT NOT NULL AUTO_INCREMENT,
+  `idUsuario` INT NULL,
+  PRIMARY KEY (`idGeladeira`),
+  INDEX `idUsuario_idx` (`idUsuario` ASC) VISIBLE,
+  CONSTRAINT `idUsuario`
+    FOREIGN KEY (`idUsuario`)
+    REFERENCES `freasy`.`Usuario` (`idUsuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `freasy`.`ItemsGeladeira` (
+  `idGeladeira` INT NOT NULL,
+  `Item` VARCHAR(45) NOT NULL,
+  `Quantidade` VARCHAR(45) NULL,
+  PRIMARY KEY (`idGeladeira`, `Item`),
+  CONSTRAINT `idGeladeira`
+    FOREIGN KEY (`idGeladeira`)
+    REFERENCES `freasy`.`Geladeira` (`idGeladeira`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `freasy`.`Receitas` (
+  `NomeReceita` VARCHAR(45) NOT NULL,
+  `Intrucoes` VARCHAR(512) NULL,
+  PRIMARY KEY (`NomeReceita`))
+ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `freasy`.`IngredientesReceita` (
+  `NomeReceita` VARCHAR(45) NOT NULL,
+  `Ingrediente` VARCHAR(45) NOT NULL,
+  `Quantidade` INT NULL,
+  PRIMARY KEY (`NomeReceita`, `Ingrediente`),
+  CONSTRAINT `NomeReceita`
+    FOREIGN KEY (`NomeReceita`)
+    REFERENCES `freasy`.`Receitas` (`NomeReceita`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+insert into usuario (nome, senha)
+values('Breno', 'santa'),('Tadeu', 'egydio'), ('Junior', 'dede'),
+('Porto','veneno'),('Luquinhas','lucas'),('Danilo','fesso');
+
+select * from usuario
+
+insert into Geladeira ( idUsuario )
+values(1),(3), (2),(4),(6);
+
+select * from geladeira
+
+insert into ItemsGeladeira( idGeladeira, Item, Quantidade )
+values(3,'Cerveja',5),(3,'Leite',2),(3,'Refrigerante',4),(3,'Presunto',5),(2,'Cerveja',10),(2,'Refrigerante',2),(2,'Chocolate',5),(2,'Ovo',12);
+
+insert into ItemsGeladeira( idGeladeira, Item, Quantidade )
+values(4,'Cerveja',5),(4,'Leite',2),(5,'Refrigerante',4),(5,'Presunto',5),(5,'Cerveja',10),(5,'Queijo',2),(5,'Chocolate',5),(5,'Ovo',12),(5,'Suco',12);
+
+
+select * from ItemsGeladeira
+
+insert into Receitas ( NomeReceita, Intrucoes )
+values('miojo com ovo', 'encha uma panela com agua, espere ferver. Coloque o mojo, espere 1 minuto e em seguida coloque um ovo cru junto com o tempero aguarde mais dois minutos e ta show papaa');
+insert into Receitas ( NomeReceita, Intrucoes )
+values('cerveja com leite', 'Encha um copo de cerveja e misture com duas colheres de leite. Dece ficar ruim!');
+
+select * from Receitas
+
+
+insert into IngredientesReceita( NomeReceita, Ingrediente, Quantidade)
+values('cerveja com leite','Cerveja',2),('cerveja com leite','leite',1),('miojo com ovo','ovo',1);
+
+select nome, count(*) as QTD_itens from usuario join geladeira on usuario.idUsuario = geladeira.idUsuario join itemsgeladeira on geladeira.idgeladeira = itemsgeladeira.idgeladeira where quantidade > 0 group by nome;
+
+select receitas.nomereceita from receitas join ingredientesreceita where receitas.nomereceita = ingredientesreceita.nomereceita AND ingredientesreceita.ingrediente = 'ovo' ;
+
+create view qtd_itens_geladeira as select nome, count(*) as qtd_itens from usuario join geladeira on usuario.idUsuario = geladeira.idUsuario join itemsgeladeira on geladeira.idgeladeira = itemsgeladeira.idgeladeira where quantidade > 0 group by nome;
+
+select nome, qtd_itens_geladeira.qtd_itens from qtd_itens_geladeira INNER JOIN (select max(qtd_itens) as qtd_itens from qtd_itens_geladeira) as a where qtd_itens_geladeira.qtd_itens = a.qtd_itens;
